@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public IList<ITrackingConnection> GetConnections()
         {
-            return _connections.Values.Select(metadata => metadata.Connection).ToList();
+            return _connections.Select(p => p.Value.Connection).ToList();
         }
 
         public ConnectionMetadata GetConnection(string connectionId)

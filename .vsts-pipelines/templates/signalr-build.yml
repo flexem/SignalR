@@ -1,0 +1,56 @@
+parameters:
+  pool: ''
+  beforeBuild: []
+  afterBuild: []
+  variables:
+
+jobs:
+- job: Windows
+  pool:
+    ${{ if eq(parameters.pool, 'public') }}:
+      name: NetCorePublic-Pool
+      queue: BuildPool.Server.Amd64.VS2019.Open
+    ${{ if eq(parameters.pool, 'internal') }}:
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Server.Amd64.VS2019
+  variables:
+    BuildConfiguration: Release
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - checkout: self
+    clean: true
+
+  - task: NodeTool@0
+    displayName: Install Node.js
+    inputs:
+      versionSpec: 12.x
+
+  - ${{ parameters.beforeBuild }}
+
+  - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
+    displayName: Run build.cmd
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Upload artifacts
+    condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
+    inputs:
+      pathtoPublish: artifacts/$(BuildConfiguration)/
+      artifactName: artifacts-$(BuildConfiguration)
+      artifactType: Container
+
+  - task: PublishBuildArtifacts@1
+    displayName: Upload logs
+    condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
+    inputs:
+      pathtoPublish: artifacts/logs/
+      artifactName: logs-$(BuildConfiguration)
+      artifactType: Container
+
+  - ${{ parameters.afterBuild }}

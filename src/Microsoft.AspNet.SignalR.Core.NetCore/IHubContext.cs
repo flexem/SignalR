@@ -20,5 +20,7 @@ namespace Microsoft.AspNet.SignalR
         /// Gets the <see cref="IGroupManager"/> the hub.
         /// </summary>
         IGroupManager Groups { get; }
+
+        Action<MessageDroppedEventArgs> OnMessageDropped { get; set; }
     }
 }

@@ -26,6 +26,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        public long DroppedMessageCount => _topics.Values.Sum(r => r.Store.DroppedMessageCount) +
+                                           _groupTopics.Values.Sum(r => r.Store.DroppedMessageCount);
+
         public Topic this[string key]
         {
             get

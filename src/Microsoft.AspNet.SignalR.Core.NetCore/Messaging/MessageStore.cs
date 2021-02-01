@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private long _nextFreeMessageId;
 
+        public long DroppedMessageCount = 0;
+
         // Creates a message store with the specified capacity. The actual capacity will be *at least* the
         // specified value. That is, GetMessages may return more data than 'capacity'.
         public MessageStore(uint capacity, uint offset)
@@ -172,6 +174,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         existingFragment?.DisposeData();
                         return true;
                     }
+                    else
+                    {
+                        DroppedMessageCount++;
+                    }
                 }
 
                 // another thread is responsible for updating the fragment, so fall to bottom of method
@@ -187,6 +193,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         newMessageId = GetMessageId(fragmentNum, offset: (uint)i);
                         return true;
+                    }
+                    else
+                    {
+                        DroppedMessageCount++;
                     }
                 }
 

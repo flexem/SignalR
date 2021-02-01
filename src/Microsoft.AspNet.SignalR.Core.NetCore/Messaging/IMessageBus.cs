@@ -16,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns></returns>
         Task Publish(Message message);
 
+        Task Publish(Message message, Action<Message> onMessageDropped);
+
         /// <summary>
         /// 
         /// </summary>

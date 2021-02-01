@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         public Func<Task> Reconnected { get; set; }
 
         // Unit testing hooks
-        internal Action AfterReceive;
-        internal Action BeforeCancellationTokenCallbackRegistered;
-        internal Action BeforeReceive;
-        internal Action<Exception> AfterRequestEnd;
+        internal Action AfterReceive = null;
+        internal Action BeforeCancellationTokenCallbackRegistered = null;
+        internal Action BeforeReceive = null;
+        internal Action<Exception> AfterRequestEnd = null;
 
         protected override Task InitializePersistentState()
         {

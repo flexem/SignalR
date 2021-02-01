@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private JsonSerializer _serializer;
         private IParameterResolver _binder;
         private IHubPipelineInvoker _pipelineInvoker;
-        private bool _isDebuggingEnabled;
+        private bool _isDebuggingEnabled = default;
 
         private static readonly MethodInfo _continueWithMethod = typeof(HubDispatcher).GetMethod("ContinueWith", BindingFlags.NonPublic | BindingFlags.Static);
 

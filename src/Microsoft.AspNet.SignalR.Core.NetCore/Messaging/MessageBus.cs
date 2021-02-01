@@ -43,12 +43,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly TimeSpan _topicTtl;
 
         // For unit testing
-        internal Action<string, Topic> BeforeTopicGarbageCollected;
-        internal Action<string, Topic> AfterTopicGarbageCollected;
-        internal Action<string, Topic> BeforeTopicMarked;
-        internal Action<string> BeforeTopicCreated;
-        internal Action<string, Topic> AfterTopicMarkedSuccessfully;
-        internal Action<string, Topic, int> AfterTopicMarked;
+        internal Action<string, Topic> BeforeTopicGarbageCollected = null;
+        internal Action<string, Topic> AfterTopicGarbageCollected = null;
+        internal Action<string, Topic> BeforeTopicMarked = null;
+        internal Action<string> BeforeTopicCreated = null;
+        internal Action<string, Topic> AfterTopicMarkedSuccessfully = null;
+        internal Action<string, Topic, int> AfterTopicMarked = null;
 
         private const int DefaultMaxTopicsWithNoSubscriptions = 1000;
 
@@ -128,6 +128,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         protected internal TopicLookup Topics { get; private set; }
 
+        public long DroppedMessageCount => Topics.DroppedMessageCount;
+
         /// <summary>
         /// Publishes a new message to the specified event on the bus.
         /// </summary>
@@ -148,6 +150,32 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
 //            Counters.MessageBusMessagesPublishedTotal.Increment();
 //            Counters.MessageBusMessagesPublishedPerSec.Increment();
+
+
+            return TaskAsyncHelper.Empty;
+        }
+
+
+        public Task Publish(Message message, Action<Message> onMessageDropped)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
+            Topic topic;
+            if (Topics.TryGetValue(message.Key, out topic))
+            {
+                topic.Store.Add(message);
+                ScheduleTopic(topic);
+            }
+            else
+            {
+                onMessageDropped?.Invoke(message);
+            }
+
+            //            Counters.MessageBusMessagesPublishedTotal.Increment();
+            //            Counters.MessageBusMessagesPublishedPerSec.Increment();
 
 
             return TaskAsyncHelper.Empty;

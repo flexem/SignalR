@@ -141,12 +141,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 if (busMessage.WaitForAck)
                 {
                     Task ackTask = _ackHandler.CreateAck(busMessage.CommandId);
-                    return _bus.Publish(busMessage).Then(task => task, ackTask);
+                    return _bus.Publish(busMessage, OnMessageDropped).Then(task => task, ackTask);
                 }
 
-                return _bus.Publish(busMessage);
+                return _bus.Publish(busMessage, OnMessageDropped);
             }
         }
+
+        public Action<Message> OnMessageDropped { get; set; }
 
         private Task MultiSend(IList<string> signals, object value, IList<string> excludedSignals)
         {
@@ -172,7 +174,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     message.Filter = filter;
                 }
 
-                tasks[i] = _bus.Publish(message);
+                tasks[i] = _bus.Publish(message, OnMessageDropped);
             }
 
             // Return a task that represents all

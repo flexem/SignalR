@@ -55,19 +55,19 @@ namespace Microsoft.AspNet.SignalR.Transports
                        .Then(s => WriteInit(s), this);
         }
 
-        private static Task PerformKeepAlive(object state)
+        private static async Task PerformKeepAlive(object state)
         {
             var transport = (ServerSentEventsTransport)state;
 
-            transport.Context.Response.Body.Write(_keepAlive, 0, _keepAlive.Length);
+            await transport.Context.Response.Body.WriteAsync(_keepAlive, 0, _keepAlive.Length);
 
-            return transport.Context.Response.Body.FlushAsync();
+            await transport.Context.Response.Body.FlushAsync();
         }
 
         private static byte[] _prefix = Encoding.UTF8.GetBytes("data: ");
         private static byte[] _suffix = Encoding.UTF8.GetBytes("\n\n");
 
-        private static Task PerformSend(object state)
+        private static async Task PerformSend(object state)
         {
             var context = (SendContext)state;
 
@@ -81,11 +81,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                     selfSerializer.WriteJson(ref writer);
                     writer.WriteRaw(_suffix);
                     var buf = writer.GetBuffer();
-                    context.Transport.Context.Response.Body.Write(buf.Array, buf.Offset, buf.Count);
+                    await context.Transport.Context.Response.Body.WriteAsync(buf.Array, buf.Offset, buf.Count);
 
                     var flushtask = context.Transport.Context.Response.Body.FlushAsync();
 //                    flushtask.ContinueWith((t, s) => BufferPool.Return((byte[]) s), srcbuf);
-                    return flushtask;
+                    await flushtask;
                     //                        context.Transport.TraceOutgoingMessage(writer.Buffer);
                 }
                 catch (Exception ex)
@@ -107,22 +107,22 @@ namespace Microsoft.AspNet.SignalR.Transports
                     writer.Flush();
 
                     var buf = writer.Buffer;
-                    context.Transport.Context.Response.Body.Write(buf.Array, buf.Offset, buf.Count);
+                    await context.Transport.Context.Response.Body.WriteAsync(buf.Array, buf.Offset, buf.Count);
 
                     //                    context.Transport.TraceOutgoingMessage(writer.Buffer);
-                    return context.Transport.Context.Response.Body.FlushAsync();
+                    await context.Transport.Context.Response.Body.FlushAsync();
                 }
             }
 
         }
 
-        private static Task WriteInit(ServerSentEventsTransport transport)
+        private static async Task WriteInit(ServerSentEventsTransport transport)
         {
             transport.Context.Response.ContentType = "text/event-stream";
 
-            transport.Context.Response.Body.Write(_dataInitialized, 0, _dataInitialized.Length);
+            await transport.Context.Response.Body.WriteAsync(_dataInitialized, 0, _dataInitialized.Length);
 
-            return transport.Context.Response.Body.FlushAsync();
+            await transport.Context.Response.Body.FlushAsync();
         }
 
         private class SendContext

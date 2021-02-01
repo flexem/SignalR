@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -14,6 +16,8 @@ namespace Microsoft.AspNet.SignalR
         /// The main signal for this connection. This is the main signalr for a <see cref="PersistentConnection"/>.
         /// </summary>
         string DefaultSignal { get; }
+
+        Action<Message> OnMessageDropped { get; set; }
 
         /// <summary>
         /// Sends a message to connections subscribed to the signal.
